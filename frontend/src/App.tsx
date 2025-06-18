@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Marquee from 'react-fast-marquee'
 import './App.css'
 
 interface Item {
@@ -40,10 +41,10 @@ function App() {
   if (error) return <div className="error">Error: {error}</div>
 
   return (
-    <main className="geocities">
-      <marquee scrollAmount={10} behavior="scroll">
-          {"★☆★ Welcome to the Totally Rad Gilded Rose Stock-o-Matic 3000!!! ★☆★"}
-      </marquee>
+    <main className="cool-looking-box">
+      <Marquee gradient={false} speed={40}>
+        ★☆★ Welcome to the the Gilded Rose Stock Inventory Management System!!! ★☆★
+      </Marquee>
       <h1 className="rainbow-text">Current Inventory</h1>
       <table className="inventory">
         <thead>
@@ -64,7 +65,7 @@ function App() {
         </tbody>
       </table>
       <button className="blink" onClick={advanceDay}>
-        &gt;&gt; Advance One Totally Tubular Day! &gt;&gt;
+        &gt;&gt; ✨ Advance One Day! ✨ &gt;&gt;
       </button>
     </main>
   )

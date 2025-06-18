@@ -1,16 +1,17 @@
+/* copyright 1998 - ned reid. don't steal my cool css styling! */
+/* (unless u want to) */
 #root {
   margin: 0 auto;
   padding: 0;
 }
 
-/* Geocities aesthetic */
 body {
-  background: url('https://1-background.com/images/stars-1/star-space-tile.jpg'); /* tiled stars bg */
+  background: url('https://1-background.com/images/stars-1/star-space-tile.jpg');
   color: #00ff00;
   font-family: 'Comic Sans MS', 'Comic Sans', cursive;
 }
 
-.geocities {
+.cool-looking-box {
   width: 90%;
   margin: 0 auto;
   text-align: center;
@@ -26,7 +27,7 @@ marquee {
 
 .rainbow-text {
   font-size: 2.5rem;
-  background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet);
+  background: linear-gradient(70deg, red, orange, yellow, green, cyan, blue, violet);
   -webkit-background-clip: text;
   color: transparent;
   animation: rainbow 5s infinite linear;
