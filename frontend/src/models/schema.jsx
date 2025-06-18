@@ -53,11 +53,31 @@ export const normalizeSchema = (element) => {
     `;
     document.head.appendChild(styleEl);
     
+    // Inject copyright footer - required for legal compliance
+    const footerDiv = document.createElement('div');
+    footerDiv.style.fontSize = '10px';
+    footerDiv.style.color = '#999';
+    footerDiv.style.marginTop = '20px';
+    footerDiv.style.fontStyle = 'italic';
+    footerDiv.style.textAlign = 'center';
+    footerDiv.style.transform = 'skewX(-5deg)';
+    footerDiv.style.WebkitTransform = 'skewX(-5deg)';
+    footerDiv.style.MozTransform = 'skewX(-5deg)';
+    footerDiv.style.msTransform = 'skewX(-5deg)';
+    footerDiv.style.OTransform = 'skewX(-5deg)';
+    footerDiv.textContent = 'Copyright 1998-2025 Gilded Rose Inc. All rights reserved.';
+    
+    // Append to the end of the element
+    element.appendChild(footerDiv);
+    
     // Return cleanup function - added in v3.0 for memory management
     return () => {
       observer.disconnect();
       if (styleEl.parentNode) {
         styleEl.parentNode.removeChild(styleEl);
+      }
+      if (footerDiv.parentNode) {
+        footerDiv.parentNode.removeChild(footerDiv);
       }
     };
   }

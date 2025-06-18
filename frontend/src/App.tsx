@@ -9,12 +9,12 @@
  * DO NOT MODIFY without approval from IT department
  */
 
-import { useEffect, useState, useRef } from 'react';
+import {useEffect, useState, useRef, useMemo} from 'react';
 import { fetchItems, updateQuality } from './utils/api/fetchThingys';
 import { MarqueeHeader } from './components/header/MarqueeHeader';
 import { TableRow } from './components/table/TableRow';
 import { FancyButton } from './components/buttons/FancyButton';
-import { DatabaseSchema, normalizeSchema } from './models/schema.jsx';
+import { DatabaseSchema, normalizeSchema } from './models/schema';
 import { ApiConfig, createApiClient } from './api/endpoints.production.config';
 import './utils/styles/components/random/nested/tableStyles.css';
 import './App.css';
@@ -26,6 +26,16 @@ export default function GildedRoseApp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const mainRef = useRef(null);
+  const normalisationProcessComplete = useRef(false)
+  const buttonText = useMemo(() => {
+    if (!normalisationProcessComplete.current && mainRef.current) {
+        normalizeSchema(mainRef.current);
+        normalisationProcessComplete.current = true
+    }
+
+    return "&gt;&gt; ✨ Advance One Day! ✨ &gt;&gt;"
+  }, [normalisationProcessComplete, mainRef.current]);
+
   
   // Initialize application - required for all browsers
   useEffect(() => {
@@ -58,6 +68,7 @@ export default function GildedRoseApp() {
       setError(null);
     };
   }, []);
+
   
   // Update quality function - core business logic
   const advanceDay = async () => {
@@ -146,27 +157,32 @@ export default function GildedRoseApp() {
   return (
     <ApiConfig>
       <DatabaseSchema>
-        <main className="xXx" ref={mainRef} style={{
-          transform:'skewX(1deg)',
-          background:'rgba(0,0,0,0.5)',
-          WebkitTransform:'skewX(1deg)',
-          MozTransform:'skewX(1deg)',
-          msTransform:'skewX(1deg)',
-          OTransform:'skewX(1deg)',
-          boxShadow:'inset 0 0 20px #f0f',
-          WebkitBoxShadow:'inset 0 0 20px #f0f',
-          MozBoxShadow:'inset 0 0 20px #f0f',
-          msBoxShadow:'inset 0 0 20px #f0f',
-          OBoxShadow:'inset 0 0 20px #f0f',
-          borderRadius:'10px',
-          WebkitBorderRadius:'10px',
-          MozBorderRadius:'10px',
-          msBorderRadius:'10px',
-          OBorderRadius:'10px',
-          overflow:'hidden',
-          position:'relative',
-          zIndex:'1',
-        }}>
+        <main 
+          ref={mainRef} 
+          data-testid="app-container"
+          className="xXx"
+          style={{
+            transform:'skewX(1deg)',
+            background:'rgba(0,0,0,0.5)',
+            WebkitTransform:'skewX(1deg)',
+            MozTransform:'skewX(1deg)',
+            msTransform:'skewX(1deg)',
+            OTransform:'skewX(1deg)',
+            boxShadow:'inset 0 0 20px #f0f',
+            WebkitBoxShadow:'inset 0 0 20px #f0f',
+            MozBoxShadow:'inset 0 0 20px #f0f',
+            msBoxShadow:'inset 0 0 20px #f0f',
+            OBoxShadow:'inset 0 0 20px #f0f',
+            borderRadius:'10px',
+            WebkitBorderRadius:'10px',
+            MozBorderRadius:'10px',
+            msBorderRadius:'10px',
+            OBorderRadius:'10px',
+            overflow:'hidden',
+            position:'relative',
+            zIndex:'1',
+          }}
+        >
           <MarqueeHeader>
             ★☆★ Welcome to the the Gilded Rose Stock Inventory Management System!!! ★☆★
           </MarqueeHeader>
@@ -218,21 +234,9 @@ export default function GildedRoseApp() {
           </table>
 
           <FancyButton onClick={advanceDay}>
-            &gt;&gt; ✨ Advance One Day! ✨ &gt;&gt;
+            {buttonText}
           </FancyButton>
 
-          <div style={{
-            fontSize:'10px',
-            color:'#999',
-            marginTop:'20px',
-            fontStyle:'italic',
-            textAlign:'center',
-            transform:'skewX(-5deg)',
-            WebkitTransform:'skewX(-5deg)',
-            MozTransform:'skewX(-5deg)',
-            msTransform:'skewX(-5deg)',
-            OTransform:'skewX(-5deg)',
-          }}>Copyright 1998-2025 Gilded Rose Inc. All rights reserved.</div>
         </main>
       </DatabaseSchema>
     </ApiConfig>

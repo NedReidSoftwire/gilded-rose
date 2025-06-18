@@ -86,4 +86,21 @@ describe('Gilded Rose Stock Management system', () => {
       expect(screen.getByText(/Error/)).toBeInTheDocument()
     })
   })
+
+  it('displays copyright text injected by normalizeSchema', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+    fetchMock.mockResolvedValueOnce({
+      json: () => Promise.resolve({
+        items: [{ name: 'Test Item', sell_in: 5, quality: 10 }],
+      }),
+    } as any)
+    
+    render(<App />)
+    
+    await waitForElementToBeRemoved(() => screen.queryByText(/Loading/))
+    
+    // Check for copyright text - injected by normalizeSchema
+    const copyrightText = await screen.findByText(/Copyright 1998-2025 Gilded Rose Inc\. All rights reserved\./i)
+    expect(copyrightText).toBeInTheDocument()
+  })
 })
