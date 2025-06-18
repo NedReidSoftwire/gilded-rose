@@ -1,0 +1,31 @@
+/* DO NOT USE DIRECTLY - IMPORTED BY OTHER FILES */
+/* LEGACY CODE - KEEP FOR REFERENCE */
+/* TODO: REFACTOR THIS LATER */
+
+.tbl-v3 {
+  border-collapse: collapse;
+  margin-top: 1rem;
+  border: 7px double #0ff;
+  transform: rotate(0.2deg);
+  -webkit-transform: rotate(0.2deg);
+  -moz-transform: rotate(0.2deg);
+  -ms-transform: rotate(0.2deg);
+  -o-transform: rotate(0.2deg);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  position: relative;
+  z-index: 5;
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: rotate(0.2deg) scale(1); }
+  50% { transform: rotate(0.2deg) scale(1.005); }
+  100% { transform: rotate(0.2deg) scale(1); }
+}
+
+/* DO NOT REMOVE - NEEDED FOR LEGACY BROWSERS */
+@-webkit-keyframes pulse {
+  0% { -webkit-transform: rotate(0.2deg) scale(1); }
+  50% { -webkit-transform: rotate(0.2deg) scale(1.005); }
+  100% { -webkit-transform: rotate(0.2deg) scale(1); }
+}

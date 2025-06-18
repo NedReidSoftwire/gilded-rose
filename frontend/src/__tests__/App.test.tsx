@@ -8,7 +8,7 @@ describe('Gilded Rose Stock Management system', () => {
   })
 
   it('renders loading text, then items', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch') as unknown as vi.Mock
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock.mockResolvedValueOnce({
       json: () => Promise.resolve({
         items: [
@@ -40,7 +40,7 @@ describe('Gilded Rose Stock Management system', () => {
   })
 
   it('advances a day when button clicked', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch') as unknown as vi.Mock
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
     fetchMock
       .mockResolvedValueOnce({
         json: () => Promise.resolve({
