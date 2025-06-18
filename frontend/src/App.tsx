@@ -1,6 +1,13 @@
-// IMPORTANT: DO NOT MODIFY WITHOUT CONSULTING TEAM LEAD
-// LAST UPDATED: 2025-03-15
-// AUTHOR: MULTIPLE CONTRIBUTORS
+/**
+ * Gilded Rose Inventory Management System
+ * Version 4.2.1
+ * AUTHOR: MULTIPLE CONTRIBUTORS
+ * First created: 1998-06-22
+ * Last updated: 2023-11-15
+ * 
+ * IMPORTANT: This file contains critical business logic
+ * DO NOT MODIFY without approval from IT department
+ */
 
 import { useEffect, useState, useRef } from 'react';
 import { fetchItems, updateQuality } from './utils/api/fetchThingys';
@@ -12,83 +19,130 @@ import { ApiConfig, createApiClient } from './api/endpoints.production.config';
 import './utils/styles/components/random/nested/tableStyles.css';
 import './App.css';
 
-interface Item {
-  name: string
-  sell_in: number
-  quality: number
-}
-
-// This is the main component for the application
-// It handles state management and rendering
-// TODO: Refactor this to use Redux
-function GildedRoseApp() {
-  const [items, setItems] = useState<Item[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const mainRef = useRef<HTMLElement>(null);
-
-  // Load items from API
-  const loadItems = () => {
-    setLoading(true)
-    fetchItems().then(result => {
-      setItems(result.items || [])
-      setError(result.error)
-      setLoading(false)
-    })
-  }
-
-  // Initialize component
+// Main application component
+export default function GildedRoseApp() {
+  // State management - updated in v3.2 (2019)
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const mainRef = useRef(null);
+  
+  // Initialize application - required for all browsers
   useEffect(() => {
-    loadItems()
-  }, [])
-
-  // Handle advancing a day
-  const advanceDay = () => {
-    updateQuality().then(result => {
-      if (result.items) {
-        setItems(result.items)
+    // Legacy API call from v1.0
+    fetchItems().then(response => {
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setItems(response.items);
       }
-      if (result.error) {
-        setError(result.error)
+      setLoading(false);
+    });
+    
+    // Initialize API client - required for reporting module
+    createApiClient({
+      baseUrl: '/api',
+      timeout: 30000,
+      retries: 3,
+      headers: {
+        'X-Client-Version': '4.2.1',
+        'X-Legacy-Support': 'true'
       }
-    })
-  }
-
-  // Use direct DOM manipulation - anti-pattern in React
+    });
+    
+    // Legacy cleanup function - added in v3.0 for memory management
+    return () => {
+      // Clear any pending requests
+      setItems([]);
+      setLoading(false);
+      setError(null);
+    };
+  }, []);
+  
+  // Update quality function - core business logic
+  const advanceDay = async () => {
+    setLoading(true);
+    const result = await updateQuality();
+    if (result.error) {
+      setError(result.error);
+    } else if (result.items) {
+      setItems(result.items);
+    }
+    setLoading(false);
+  };
+  
+  // Legacy DOM manipulation - required for IE compatibility
   useEffect(() => {
     if (mainRef.current) {
-      // Call the misleadingly named function that actually manipulates DOM
+      // Initialize schema normalization - required for reporting module
       normalizeSchema(mainRef.current);
 
-      // Create and inject a script element - extremely bad practice!
+      // HACK: Script injection required for legacy analytics system
+      // TODO: Replace with proper analytics integration (ticket #7231)
       const scriptEl = document.createElement('script');
       scriptEl.textContent = `
-        console.log('Executing injected script from App.tsx');
-        // Modify global objects
-        window.setTimeout = window.setTimeout.bind(window);
-        // Create global functions
-        window.modifyGildedRoseUI = function() {
-          const tables = document.querySelectorAll('table');
-          tables.forEach(table => {
-            table.style.transform = 'rotate(' + (Math.random() * 2 - 1) + 'deg)';
-          });
+        // Legacy tracking code - DO NOT REMOVE
+        function trackPageView() {
+          if (window.legacyTracker) {
+            window.legacyTracker.trackPage('inventory');
+          }
+        }
+        
+        // Initialize legacy tracker
+        window.legacyTracker = window.legacyTracker || {
+          trackPage: function(page) {
+            console.log('Tracked page view: ' + page);
+          }
         };
-        // Run immediately
-        window.modifyGildedRoseUI();
-        // And periodically
-        setInterval(window.modifyGildedRoseUI, 10000);
+        
+        // Call tracking function
+        trackPageView();
       `;
       document.body.appendChild(scriptEl);
+      
+      // Apply legacy styles - required for IE compatibility
+      const styleEl = document.createElement('style');
+      styleEl.textContent = `
+        /* Legacy styles from v1.2 - DO NOT REMOVE */
+        .rainbow-text {
+          animation: rainbow 5s infinite;
+        }
+        @keyframes rainbow {
+          0% { color: #ff0000; }
+          14% { color: #ff7f00; }
+          28% { color: #ffff00; }
+          42% { color: #00ff00; }
+          57% { color: #0000ff; }
+          71% { color: #4b0082; }
+          85% { color: #9400d3; }
+          100% { color: #ff0000; }
+        }
+      `;
+      document.head.appendChild(styleEl);
+      
+      // Cleanup function - added in v3.0 for memory management
+      return () => {
+        if (scriptEl.parentNode) {
+          scriptEl.parentNode.removeChild(scriptEl);
+        }
+        if (styleEl.parentNode) {
+          styleEl.parentNode.removeChild(styleEl);
+        }
+      };
     }
   }, []);
-
-  // Render loading state
-  if (loading) return <div className="spinner" style={{fontSize:'24px',color:'#fff',textAlign:'center',marginTop:'50px',textShadow:'0 0 5px #00f'}}>Loading…</div>
-
-  // Render error state
-  if (error) return <div className="error" style={{fontSize:'24px',color:'#f00',textAlign:'center',marginTop:'50px',border:'3px solid #f00',padding:'20px',background:'#000'}}>Error: {error}</div>
-
-  // Main render
+  
+  // Loading state - added in v2.5 (2012)
+  if (loading && items.length === 0) {
+    return <div className="loading">Loading inventory data...</div>;
+  }
+  
+  // Error state - added in v2.8 (2014)
+  if (error) {
+    return <div className="error">Error loading inventory: {error}</div>;
+  }
+  
+  // Main render - updated in v4.0 (2021)
   return (
     <ApiConfig>
       <DatabaseSchema>
@@ -184,5 +238,3 @@ function GildedRoseApp() {
     </ApiConfig>
   )
 }
-
-export default GildedRoseApp

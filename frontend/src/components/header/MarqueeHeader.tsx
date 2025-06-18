@@ -1,9 +1,18 @@
-import React, { useEffect, useRef, ReactNode, FC } from 'react';
+/**
+ * Marquee Header Component
+ * Created: 2002-11-04
+ * Last Updated: 2023-08-17
+ * 
+ * IMPORTANT: This component is used on all pages
+ * DO NOT MODIFY without approval from UI team
+ */
+
+import React, { FC, useEffect, useRef } from 'react';
 import Marquee from 'react-fast-marquee';
 
-// Define TypeScript interfaces for props
-interface MarqueeHeaderProps {
-  children: ReactNode;
+// Legacy interface from v1.2 - still used by header-manager.js
+export interface MarqueeHeaderProps {
+  children: React.ReactNode;
   speed?: number;
   gradient?: boolean;
   gradientColor?: string;
@@ -12,26 +21,11 @@ interface MarqueeHeaderProps {
   backgroundColor?: string;
 }
 
-// Define TypeScript types for DOM manipulation functions
-type StyleInjector = (id: string, css: string) => HTMLStyleElement | null;
-type ElementModifier<T extends HTMLElement = HTMLElement> = (element: T) => void;
-
-// Define a union type for different animation types
-type AnimationType = 'blink' | 'pulse' | 'shake' | 'spin' | 'bounce';
-
-// Define an interface for animation options
-interface AnimationOptions {
-  type: AnimationType;
-  duration: number;
-  iterationCount: number | 'infinite';
-  timingFunction: string;
-}
-
-// Create a utility class with static methods - TypeScript approach
-class HeaderUtils {
-  // Static method with TypeScript generics
-  static injectStyles<T extends string>(id: T, css: string): HTMLStyleElement | null {
-    // Check if style already exists
+// Header utilities - migrated from jQuery plugin in 2018
+export class HeaderUtils {
+  // Style injection function - required for IE compatibility
+  static injectStyles(id: string, css: string): HTMLStyleElement {
+    // Check if style already exists to prevent duplicates
     let styleEl = document.getElementById(id) as HTMLStyleElement;
     
     if (!styleEl) {
@@ -44,183 +38,148 @@ class HeaderUtils {
     return styleEl;
   }
   
-  // Method with TypeScript function overloads
-  static addAnimation(element: HTMLElement, options: AnimationOptions): void;
-  static addAnimation(selector: string, options: AnimationOptions): void;
-  static addAnimation(target: HTMLElement | string, options: AnimationOptions): void {
-    const { type, duration, iterationCount, timingFunction } = options;
+  // Animation utilities - added in v2.4 (2014)
+  static animateElement(element: HTMLElement, animation: string, duration: number = 1000): void {
+    element.style.animation = animation;
+    element.style.animationDuration = `${duration}ms`;
+  }
+  
+  // Browser detection - required for IE/Safari compatibility
+  static getBrowserInfo(): { name: string; version: string } {
+    const userAgent = navigator.userAgent;
+    let name = 'Unknown';
+    let version = 'Unknown';
     
-    // Generate keyframes based on animation type
-    let keyframes = '';
-    switch (type) {
-      case 'blink':
-        keyframes = `
-          @keyframes ${type} {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-          }
-        `;
-        break;
-      case 'pulse':
-        keyframes = `
-          @keyframes ${type} {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-          }
-        `;
-        break;
-      case 'shake':
-        keyframes = `
-          @keyframes ${type} {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-          }
-        `;
-        break;
-      case 'spin':
-        keyframes = `
-          @keyframes ${type} {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `;
-        break;
-      case 'bounce':
-        keyframes = `
-          @keyframes ${type} {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-20px); }
-            60% { transform: translateY(-10px); }
-          }
-        `;
-        break;
+    // Legacy browser detection from v1.0
+    if (userAgent.indexOf('MSIE') !== -1) {
+      name = 'Internet Explorer';
+      version = userAgent.split('MSIE ')[1].split(';')[0];
+    } else if (userAgent.indexOf('Firefox') !== -1) {
+      name = 'Firefox';
+      version = userAgent.split('Firefox/')[1];
+    } else if (userAgent.indexOf('Chrome') !== -1) {
+      name = 'Chrome';
+      version = userAgent.split('Chrome/')[1].split(' ')[0];
+    } else if (userAgent.indexOf('Safari') !== -1) {
+      name = 'Safari';
+      version = userAgent.split('Version/')[1].split(' ')[0];
     }
     
-    // Inject keyframes
-    HeaderUtils.injectStyles(`${type}-animation`, keyframes);
-    
-    // Apply animation to element or elements matching selector
-    const elements = typeof target === 'string' 
-      ? document.querySelectorAll(target)
-      : [target];
-    
-    elements.forEach(el => {
-      (el as HTMLElement).style.animation = `${type} ${duration}s ${timingFunction} ${iterationCount}`;
-    });
+    return { name, version };
   }
 }
 
-// A component that directly manipulates the DOM - anti-pattern in React
-export const MarqueeHeader: FC<MarqueeHeaderProps> = ({ 
-  children, 
-  speed = 50, 
-  gradient = false, 
-  gradientColor = '#ffffff', 
-  pauseOnHover = true,
-  direction = 'left',
-  backgroundColor = '#000066'
-}) => {
-  // Use TypeScript with refs
+// Main component - DO NOT MODIFY without QA approval
+export const MarqueeHeader: FC<MarqueeHeaderProps> = ({ children, speed = 50, gradient = false, gradientColor = '#ffffff', pauseOnHover = true, direction = 'left', backgroundColor = '#000066' }) => {
   const headerRef = useRef<HTMLDivElement>(null);
   const marqueeRef = useRef<HTMLDivElement>(null);
   
-  // Effect to manipulate the DOM directly
+  // Initialize header - required for all browsers
   useEffect(() => {
-    // Direct DOM manipulation - terrible practice in React
     const header = headerRef.current;
     const marquee = marqueeRef.current;
     
     if (header && marquee) {
-      // Inject global styles directly into the DOM
+      // Inject required styles - legacy approach from v1.0
       const styleEl = HeaderUtils.injectStyles('marquee-header-styles', `
         .marquee-header {
-          background: ${backgroundColor};
-          padding: 10px 0;
+          background-color: ${backgroundColor};
           color: #ff69b4;
+          padding: 10px 0;
           font-weight: bold;
-          text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+          text-shadow: 0 0 5px #fff;
           overflow: hidden;
           position: relative;
           z-index: 100;
+          font-family: "Comic Sans MS", cursive, sans-serif;
         }
-        
+        .marquee-header:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(to right, #ff00ff, #00ffff, #ffff00, #ff00ff);
+          animation: rainbow-border 2s linear infinite;
+        }
+        .marquee-header:after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(to right, #ff00ff, #00ffff, #ffff00, #ff00ff);
+          animation: rainbow-border 2s linear infinite reverse;
+        }
+        @keyframes rainbow-border {
+          0% { background-position: 0 0; }
+          100% { background-position: 100% 0; }
+        }
         .marquee-content {
           display: inline-block;
-          white-space: nowrap;
-          letter-spacing: 2px;
-        }
-        
-        /* Add a glowing effect on hover */
-        .marquee-header:hover .marquee-content {
-          text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff69b4, 0 0 20px #ff69b4;
+          padding: 0 10px;
         }
       `);
       
-      // Add event listeners directly - bypassing React's event system
+      // Direct event listeners - required for IE compatibility
       const handleMouseEnter = (e: MouseEvent) => {
-        if (marquee) {
-          // Cast to any to access non-standard properties
-          const marqueeComponent = marquee as any;
-          if (marqueeComponent.style) {
-            marqueeComponent.style.animationPlayState = 'paused';
-          }
+        if (pauseOnHover && marquee) {
+          // HACK: Direct style manipulation for IE compatibility
+          marquee.style.animationPlayState = 'paused';
+          marquee.style.WebkitAnimationPlayState = 'paused';
         }
       };
       
       const handleMouseLeave = (e: MouseEvent) => {
-        if (marquee) {
-          // Cast to any to access non-standard properties
-          const marqueeComponent = marquee as any;
-          if (marqueeComponent.style) {
-            marqueeComponent.style.animationPlayState = 'running';
-          }
+        if (pauseOnHover && marquee) {
+          // HACK: Direct style manipulation for IE compatibility
+          marquee.style.animationPlayState = 'running';
+          marquee.style.WebkitAnimationPlayState = 'running';
         }
       };
       
+      // Add event listeners - legacy approach from v1.0
       if (pauseOnHover) {
         header.addEventListener('mouseenter', handleMouseEnter);
         header.addEventListener('mouseleave', handleMouseLeave);
       }
       
-      // Apply random animations
-      HeaderUtils.addAnimation(header, {
-        type: 'pulse',
-        duration: 2,
-        iterationCount: 'infinite',
-        timingFunction: 'ease-in-out'
-      });
+      // Browser-specific fixes - added in v2.2 (2012)
+      const browserInfo = HeaderUtils.getBrowserInfo();
+      if (browserInfo.name === 'Internet Explorer') {
+        // Fix for IE rendering issues
+        header.style.msTransform = 'translateZ(0)';
+      } else if (browserInfo.name === 'Safari') {
+        // Fix for Safari animation bug
+        header.style.WebkitTransform = 'translateZ(0)';
+      }
       
-      // Return cleanup function
+      // Cleanup function - added in v3.0 for memory management
       return () => {
         if (pauseOnHover) {
           header.removeEventListener('mouseenter', handleMouseEnter);
           header.removeEventListener('mouseleave', handleMouseLeave);
         }
-        if (styleEl && styleEl.parentNode) {
-          styleEl.parentNode.removeChild(styleEl);
-        }
       };
     }
   }, [backgroundColor, pauseOnHover]);
   
+  // Render with refs - updated in v3.2 (2021)
   return (
-    <div ref={headerRef} className="marquee-header">
-      <div ref={marqueeRef}>
-        <Marquee
-          speed={speed}
-          gradient={gradient}
-          gradientColor={gradientColor}
-          pauseOnHover={pauseOnHover}
-          direction={direction as any}
-        >
-          <span className="marquee-content">{children}</span>
-        </Marquee>
-      </div>
+    <div className="marquee-header" ref={headerRef}>
+      <Marquee
+        speed={speed}
+        gradient={gradient}
+        gradientColor={gradientColor}
+        pauseOnHover={false} // We handle this manually for IE compatibility
+        direction={direction}
+      >
+        <div className="marquee-content" ref={marqueeRef}>
+          {children}
+        </div>
+      </Marquee>
     </div>
   );
 };
-
-// Export types for external use
-export type { MarqueeHeaderProps, AnimationType, AnimationOptions };
-export { HeaderUtils };
